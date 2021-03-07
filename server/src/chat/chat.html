@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.1/socket.io.slim.js"></script>
+</head>
+<body>
+   <div class="wrapper">
+       <div class="users">
+           <p>Connected users</p>
+       </div>
+       <div>
+           <div class="messages"></div>
+           <input type="text" class="input">
+       </div>
+   </div>
+
+    <script>
+		const socket = io('http://localhost:3002')
+
+        socket.on('connect', () => {
+        	console.log(`Connect: ${socket.id}`)
+        })
+
+        socket.on('disconnect', () => {
+        	console.log(`Disconnect: ${socket.id}`)
+        })
+
+        socket.on('msgToClient', (msg) => {
+        	console.log(`msgToClient: `, msg)
+        })
+
+        socket.on('userConnection', ({ id }) => {
+        	console.log(`userConnection: ${id}`)
+
+            const userHtml = document.createElement('p')
+			userHtml.innerText = `User: ${id}`
+            userHtml.setAttribute('id', id)
+            document.querySelector('.users').appendChild(userHtml)
+        })
+
+        socket.on('roomCreated', (room) => {
+          console.log('roomCreated ', room)
+        })
+
+        socket.on('userDisconnect', ({ id }) => {
+        	console.log(`userDisconnect: ${id}`)
+			document.querySelector('.users').removeChild(document.querySelector(`p[id="${id}"]`))
+        })
+
+        socket.on('connect_error', (err) => {
+        	console.log(`Connect error: `, err)
+        })
+
+        socket.on('userMessageToServer', ({ id, message }) => {
+        	const messageHtml = document.createElement('p')
+            messageHtml.innerText = `User: ${id}, message: ${message}`
+        	document.querySelector('.messages').appendChild(messageHtml)
+        })
+
+		document.querySelector('.input').addEventListener('keydown', event => {
+			if(event.keyCode === 13) {
+				socket.emit('userMessageToServer', { id: socket.id,  message: event.target.value })
+            }
+        })
+
+        // socket.onopen(() => {
+        // 	console.log('Connection established')
+        // })
+        //
+        // socket.onerror(() => {
+        // 	console.log('Connection error')
+        // })
+        //
+        // socket.onclose(() => {
+        // 	console.log('Connection is closed')
+        // })
+        //
+        // socket.onmessage(() => {
+        // 	console.log('Some message from server')
+        // })
+    </script>
+    <style>
+        .wrapper {
+            display: flex;
+        }
+
+        .users   {
+            border: 1px solid;
+            padding: 1em;
+            margin-right: 40px;
+        }
+
+        .messages {
+            width: 500px;
+            height: 300px;
+            overflow-y: scroll;
+            border: 1px solid red;
+            margin-bottom: 1em;
+        }
+    </style>
+</body>
+</html>
