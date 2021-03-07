@@ -34,7 +34,6 @@
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
     "dotenv": "^8.2.0",
-    "mongodb": "^3.6.4",
     "mongodb-memory-server": "^6.9.3",
     "mongoose": "^5.11.19",
     "passport": "^0.4.1",

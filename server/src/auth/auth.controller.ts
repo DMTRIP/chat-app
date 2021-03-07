@@ -18,9 +18,9 @@ export class AuthController {
   @Public()
   @Post('/register')
   @UseInterceptors(FileInterceptor('avatar'))
-  register(
+  async register(
     @Body() createUserDto: CreateUserDto,
-    @UploadedFile() avatar: Express.Multer.File,
+   @UploadedFile() avatar: Express.Multer.File,
   ) {
     return this.authService.register({
       ...createUserDto,
