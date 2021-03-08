@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { CreateRoomDto } from './dto/create-room-dto';
 import { ChatService } from './chat.service';
-import { RequestUser } from '../decorators/user.decorator';
+import { CurrentUser } from '../decorators/user.decorator';
 import { User } from '../user/user.schema';
 import { ID } from '../shared.types';
 
@@ -27,7 +27,7 @@ export class ChatController {
   createMessage(
     @Param() { roomId }: { roomId: ID },
     @Body() { message }: { message: string },
-    @RequestUser() user: User,
+    @CurrentUser() user: User,
   ) {
     return this.chatService.createMessage(
       {
@@ -49,14 +49,14 @@ export class ChatController {
 
   @Patch('/:roomId/join')
   joinPublicRoom(
+    @CurrentUser() user: User,
     @Param() { roomId }: { roomId: ID },
-    @RequestUser() user: User,
   ) {
     return this.chatService.addUserToPublicRoom(roomId, user._id);
   }
 
   @Patch('/:roomId/leave')
-  leaveRoom(@Param() { roomId }: { roomId: ID }, @RequestUser() user: User) {
+  leaveRoom(@Param() { roomId }: { roomId: ID }, @CurrentUser() user: User) {
     return this.chatService.leaveRoom(roomId, user._id);
   }
 }

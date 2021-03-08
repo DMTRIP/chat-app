@@ -8,7 +8,7 @@ import {
 import { AuthService } from './auth.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
-import { Public } from './public';
+import { Public } from '../decorators/public.decorator';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('/')
@@ -20,7 +20,7 @@ export class AuthController {
   @UseInterceptors(FileInterceptor('avatar'))
   async register(
     @Body() createUserDto: CreateUserDto,
-   @UploadedFile() avatar: Express.Multer.File,
+    @UploadedFile() avatar: Express.Multer.File,
   ) {
     return this.authService.register({
       ...createUserDto,

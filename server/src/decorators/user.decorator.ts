@@ -1,7 +1,7 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 const atob = require('atob');
 
-export const RequestUser = createParamDecorator((ctx: ExecutionContext) => {
+export const CurrentUser = createParamDecorator((_, ctx: ExecutionContext) => {
   const request = ctx.switchToHttp().getRequest();
   const decoded = parseJwt(request.headers.authorization.split(' ')[1]);
 

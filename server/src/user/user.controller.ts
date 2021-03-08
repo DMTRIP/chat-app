@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserSearchQuery } from './user-search.query';
-import { RequestUser } from '../decorators/user.decorator';
+import { CurrentUser } from '../decorators/user.decorator';
 import { CreateMessageDTO } from '../chat/dto/create-message-dto';
 import { User } from './user.schema';
 import { ID } from '../shared.types';
@@ -16,14 +16,14 @@ export class UserController {
   }
 
   @Get('/rooms')
-  getRooms(@RequestUser() user: User) {
+  getRooms(@CurrentUser() user: User) {
     return this.userService.getRooms(user._id);
   }
 
   @Post('/:recipientId/message')
   sendDirectMessage(
     @Param() { recipientId }: { recipientId: ID },
-    @RequestUser() user: User,
+    @CurrentUser() user: User,
     @Body() createMessageDto: CreateMessageDTO,
   ) {
     return this.userService.sendDirectMessage({

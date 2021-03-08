@@ -8,7 +8,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { ID } from '../shared.types';
 import { InjectModel } from '@nestjs/mongoose';
 import { LoginUserDto } from './dto/login-user.dto';
-import { UserInputError } from '../common/errors/errors';
+import { UserInputError } from '../common/error/errors';
 
 @Injectable()
 export class AuthService {

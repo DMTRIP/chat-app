@@ -5,19 +5,31 @@ import {
   CallHandler,
   BadRequestException,
   InternalServerErrorException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { MongoError } from 'mongodb';
-import { UserInputError } from './errors';
+import {
+  DocumentNotFoundError,
+  IllegalOperationError,
+  UserInputError,
+} from './errors';
 
 @Injectable()
 export class ErrorsInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       catchError((err) => {
-        if (err instanceof UserInputError) {
+          if (
+          err instanceof UserInputError ||
+          err instanceof DocumentNotFoundError
+        ) {
           return throwError(new BadRequestException(err));
+        }
+
+        if (err instanceof IllegalOperationError) {
+          return throwError(new ForbiddenException(err));
         }
 
         if (err instanceof BadRequestException) {
@@ -38,6 +50,8 @@ export class ErrorsInterceptor implements NestInterceptor {
               );
           }
         }
+
+        console.error(err)
 
         return throwError(new InternalServerErrorException());
       }),

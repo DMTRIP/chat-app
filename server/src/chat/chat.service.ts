@@ -9,6 +9,7 @@ import { Message } from './schemas/message.schema';
 import { CreateMessageDTO } from './dto/create-message-dto';
 import { GetMessagePageParams } from './get-message-page.params';
 import { RoomType } from './types';
+import {DocumentNotFoundError, IllegalOperationError} from "../common/error/errors";
 
 @Injectable()
 export class ChatService {
@@ -51,13 +52,11 @@ export class ChatService {
     const room = await this.roomModel.findOne({ _id: roomId });
 
     if (!room) {
-      throw new Error('room not found');
+      throw new DocumentNotFoundError('Room', { roomId })
     }
 
     if (room.type !== RoomType.group) {
-      throw new Error(
-        'addUserToPublicRoom method can be used to join only group rooms',
-      );
+      throw new IllegalOperationError('users can not join to direct rooms')
     }
 
     // @ts-ignore
@@ -91,7 +90,7 @@ export class ChatService {
     );
 
     if (!room) {
-      throw new Error('room not found');
+      throw new DocumentNotFoundError('Room', { roomId })
     }
 
     await this.userModel.findOneAndUpdate(
