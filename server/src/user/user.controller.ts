@@ -5,6 +5,7 @@ import { CurrentUser } from '../decorators/user.decorator';
 import { CreateMessageDTO } from '../chat/dto/create-message-dto';
 import { User } from './user.schema';
 import { ID } from '../shared.types';
+import { SendInvitationDTO } from './dto/send-invitation.dto';
 
 @Controller('/users')
 export class UserController {
@@ -36,5 +37,10 @@ export class UserController {
   @Get('/:id')
   getOne(@Param() { id }: { id: ID }) {
     return this.userService.getOne(id);
+  }
+
+  @Post('/invitation')
+  sendInvitation(@Body() data: SendInvitationDTO, @CurrentUser() user) {
+    return this.userService.sendInvitation(user._id, data);
   }
 }

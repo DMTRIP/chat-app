@@ -10,6 +10,8 @@ import { UserModule } from './user.module';
 import { DirectMessage, UserService } from './user.service';
 import { Room } from '../chat/schemas/room.schema';
 import { Message } from '../chat/schemas/message.schema';
+import { RoomType } from '../chat/types';
+
 const userDTO = {
   //@ts-ignore
   _id: Types.ObjectId(),
@@ -26,6 +28,7 @@ describe('User', () => {
   let userModel: Model<UserDocument>;
   let roomModel: Model<Room>;
   let messageModel: Model<Message>;
+  let helpers = createHelpers(userModel, roomModel);
 
   beforeEach(async () => {
     [module] = await Promise.all([
@@ -39,6 +42,7 @@ describe('User', () => {
     userModel = module.get<Model<UserDocument>>(getModelToken(User.name));
     roomModel = module.get<Model<Room>>(getModelToken(Room.name));
     messageModel = module.get<Model<Message>>(getModelToken(Message.name));
+    helpers = createHelpers(userModel, roomModel);
   });
 
   afterAll(async () => {
@@ -48,7 +52,7 @@ describe('User', () => {
   it('should find user by id', async function () {
     const createdUser = await userModel.create(userDTO);
     const userRecord = await userService.getOne(createdUser._id);
-    expect(userRecord).toBeTruthy()
+    expect(userRecord).toBeTruthy();
   });
 
   it('should find a user by part of nickname', async function () {
@@ -95,4 +99,104 @@ describe('User', () => {
     expect(rooms[0].users).toHaveLength(2);
     expect(messages).toHaveLength(1);
   });
+
+  it('should send invitation', async function () {
+    const { sender, recipient, room } = await helpers.createSendInviteMock();
+
+    await userService.sendInvitation(sender, {
+      recipient,
+      room,
+    });
+
+    expect((await userModel.findById(sender)).requests).toHaveLength(1);
+    expect((await userModel.findById(recipient)).invitations).toHaveLength(1);
+  });
+
+  it('should not send invitation to group member', async function (done) {
+    const { sender, recipient, room } = await helpers.createSendInviteMock();
+
+    try {
+      await userService.sendInvitation(sender, {
+        recipient: sender,
+        room,
+      });
+      done('err');
+    } catch (e) {
+      done();
+    }
+  });
+
+  it('only members of group should send invitations', async function (done) {
+    const { sender, recipient, room } = await helpers.createSendInviteMock();
+
+    try {
+      await userService.sendInvitation(recipient, {
+        recipient: sender,
+        room,
+      });
+      done('err');
+    } catch (e) {
+      done();
+    }
+  });
+
+  it('should not send invitation to themself', async function (done) {
+    const { sender, recipient, room } = await helpers.createSendInviteMock();
+
+    try {
+      await userService.sendInvitation(recipient, {
+        recipient: sender,
+        room,
+      });
+      done('err');
+    } catch (e) {
+      done();
+    }
+  });
+
+  it('should not send invitation to direct room', async function (done) {
+    const { sender, recipient, room } = await helpers.createSendInviteMock();
+    await roomModel.findOneAndUpdate({ _id: room }, { type: RoomType.direct });
+
+    try {
+      await userService.sendInvitation(recipient, {
+        recipient: sender,
+        room,
+      });
+      done('err');
+    } catch (e) {
+      done();
+    }
+  });
 });
+
+function createHelpers(userModel, roomModel) {
+  return {
+    async createSendInviteMock() {
+      const [sender, recipient] = await userModel.create([
+        userDTO,
+        {
+          ...userDTO,
+          email: 'asdw@dd.com',
+          nickname: 'naruto',
+          _id: Types.ObjectId(),
+        },
+      ]);
+
+      const room = await roomModel.create({
+        name: 'asdasd',
+        type: 'group',
+        users: [sender._id],
+      });
+
+      await userModel.findOneAndUpdate(
+        {
+          _id: sender._id,
+        },
+        { $push: { rooms: room._id } },
+      );
+
+      return { sender: sender._id, recipient: recipient._id, room: room._id };
+    },
+  };
+}

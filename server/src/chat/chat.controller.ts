@@ -47,14 +47,6 @@ export class ChatController {
     return this.chatService.getMessagePage(roomId, { page, perPage });
   }
 
-  @Patch('/:roomId/join')
-  joinPublicRoom(
-    @CurrentUser() user: User,
-    @Param() { roomId }: { roomId: ID },
-  ) {
-    return this.chatService.addUserToPublicRoom(roomId, user._id);
-  }
-
   @Patch('/:roomId/leave')
   leaveRoom(@Param() { roomId }: { roomId: ID }, @CurrentUser() user: User) {
     return this.chatService.leaveRoom(roomId, user._id);

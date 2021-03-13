@@ -2,16 +2,25 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { SchemaTypes, Types } from 'mongoose';
 import { ID } from '../shared.types';
+import { InvitationStatus } from './types';
 
 @Schema()
 export class Invitation {
-  @Prop({ type: SchemaTypes.ObjectId, required: true })
-  inviter: ID;
+  @Prop({ type: SchemaTypes.ObjectId, required: true, ref: 'User' })
+  user: ID;
   @Prop({ type: SchemaTypes.ObjectId, require: true })
   room: ID;
+  @Prop({
+    type: SchemaTypes.String,
+    enum: InvitationStatus,
+    default: InvitationStatus.pending,
+  })
+  status?: InvitationStatus;
   @Prop({ type: SchemaTypes.Date, default: Date.now() })
-  createdAt: string;
+  createdAt?: string;
 }
+
+export const InvitationScheme = SchemaFactory.createForClass(Invitation);
 
 export type UserDocument = User & Document;
 
@@ -41,8 +50,11 @@ export class User {
   @Prop({ type: [{ type: SchemaTypes.ObjectId, ref: 'Room' }] })
   rooms: Types.ObjectId[];
 
-  // @Prop({ type: [Invitation] })
-  // invitations: ID[];
+  @Prop({ type: [InvitationScheme] })
+  invitations?: Invitation[];
+
+  @Prop({ type: [InvitationScheme] })
+  requests?: Invitation[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
