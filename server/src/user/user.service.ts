@@ -2,13 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User, UserDocument } from './user.schema';
 import { Room } from '../chat/schemas/room.schema';
-import { Model } from 'mongoose';
+import { Model, Schema } from 'mongoose';
 import { UserSearchQuery } from './user-search.query';
 import { ID } from '../shared.types';
 import { RoomType } from '../chat/types';
 import { Message } from '../chat/schemas/message.schema';
 import { SendInvitationDTO } from './dto/send-invitation.dto';
-import { IllegalOperationError } from '../common/error/errors';
+import { DocumentNotFoundError, IllegalOperationError } from '../common/error/errors';
+import { Types } from 'mongoose';
 
 export interface DirectMessage {
   senderId: ID;
@@ -71,7 +72,7 @@ export class UserService {
     });
   }
 
-  async sendInvitation(sender: ID, input: SendInvitationDTO): Promise<void> {
+  async sendInvitation(sender: ID, input: SendInvitationDTO): Promise<User> {
     const { recipient, room } = input;
 
     await this.validateSendInvitationInput(sender, input);
@@ -81,16 +82,16 @@ export class UserService {
         _id: sender,
       },
       {
-        $push: { requests: { user: recipient, room } },
+        $push: { invitations: { sender, recipient, room } },
       },
     );
 
-    await this.userModel.findOneAndUpdate(
+    return this.userModel.findOneAndUpdate(
       {
         _id: recipient,
       },
       {
-        $push: { invitations: { user: sender, room } },
+        $push: { invitations: { sender, recipient, room } },
       },
     );
   }
@@ -101,12 +102,29 @@ export class UserService {
   ): Promise<void> {
     const { recipient, room } = input;
 
+    await this.userModel.ensureIndexes()
+
     const senderRecord = await this.userModel.findOne({
       _id: sender,
       rooms: { $in: [room] },
     });
 
     const roomRecord = await this.roomModel.findById(room);
+
+    const userRecord = await this.userModel.findOne({
+      'invitations.sender': sender,
+      'invitations.recipient': recipient,
+      'invitations.room': room,
+    });
+
+
+    if(!roomRecord) {
+      throw new DocumentNotFoundError('Room', {room})
+    }
+
+    if (userRecord) {
+      throw new IllegalOperationError('User can not be invited twice');
+    }
 
     if (!senderRecord) {
       throw new IllegalOperationError(

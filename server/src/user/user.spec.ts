@@ -108,7 +108,7 @@ describe('User', () => {
       room,
     });
 
-    expect((await userModel.findById(sender)).requests).toHaveLength(1);
+    expect((await userModel.findById(sender)).invitations).toHaveLength(1);
     expect((await userModel.findById(recipient)).invitations).toHaveLength(1);
   });
 
@@ -120,6 +120,26 @@ describe('User', () => {
         recipient: sender,
         room,
       });
+      done('err');
+    } catch (e) {
+      done();
+    }
+  });
+
+  it('should not send invitation twice', async function (done) {
+    const { sender, recipient, room } = await helpers.createSendInviteMock();
+
+    try {
+      await userService.sendInvitation(sender, {
+        recipient,
+        room,
+      });
+     await userService.sendInvitation(sender, {
+        recipient,
+        room,
+      })
+
+      //console.log(res1, res2)
       done('err');
     } catch (e) {
       done();

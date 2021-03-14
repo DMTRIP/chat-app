@@ -5,10 +5,12 @@ import { ID } from '../shared.types';
 import { InvitationStatus } from './types';
 
 @Schema()
-export class Invitation {
+class Invitation {
   @Prop({ type: SchemaTypes.ObjectId, required: true, ref: 'User' })
-  user: ID;
-  @Prop({ type: SchemaTypes.ObjectId, require: true })
+  sender: ID;
+  @Prop({ type: SchemaTypes.ObjectId, required: true, ref: 'User' })
+  recipient: ID;
+  @Prop({ type: SchemaTypes.ObjectId, require: true, ref: 'Room' })
   room: ID;
   @Prop({
     type: SchemaTypes.String,
@@ -20,7 +22,7 @@ export class Invitation {
   createdAt?: string;
 }
 
-export const InvitationScheme = SchemaFactory.createForClass(Invitation);
+const InvitationScheme = SchemaFactory.createForClass(Invitation);
 
 export type UserDocument = User & Document;
 
@@ -52,9 +54,6 @@ export class User {
 
   @Prop({ type: [InvitationScheme] })
   invitations?: Invitation[];
-
-  @Prop({ type: [InvitationScheme] })
-  requests?: Invitation[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
