@@ -8,8 +8,12 @@ import { ID } from '../shared.types';
 import { RoomType } from '../chat/types';
 import { Message } from '../chat/schemas/message.schema';
 import { SendInvitationDTO } from './dto/send-invitation.dto';
-import { DocumentNotFoundError, IllegalOperationError } from '../common/error/errors';
+import {
+  DocumentNotFoundError,
+  IllegalOperationError,
+} from '../common/error/errors';
 import { Types } from 'mongoose';
+import { InvitationStatus } from './types';
 
 export interface DirectMessage {
   senderId: ID;
@@ -96,13 +100,45 @@ export class UserService {
     );
   }
 
+  async acceptInvitation(userId: ID, invitationId: ID) {
+    const user = await this.userModel.findOne({
+      'invitations._id': invitationId,
+    });
+
+    const { sender, recipient, room } = user.invitations[0];
+
+    if (!user) {
+      throw new DocumentNotFoundError('Invitation', { invitationId });
+    }
+
+    if (!recipient.equals(userId)) {
+      throw new IllegalOperationError(
+        'Only recipient of invitation can accept it',
+      );
+    }
+
+    await this.userModel.updateMany(
+      {
+        'invitations.sender': sender,
+        'invitations.recipient': recipient,
+        'invitations.room': room,
+      },
+      { 'invitations.$.status': InvitationStatus.accepted },
+    );
+
+    await this.roomModel.updateOne(
+      { _id: room },
+      { $push: { users: recipient } },
+    );
+  }
+
   private async validateSendInvitationInput(
     sender: ID,
     input: SendInvitationDTO,
   ): Promise<void> {
     const { recipient, room } = input;
 
-    await this.userModel.ensureIndexes()
+    await this.userModel.ensureIndexes();
 
     const senderRecord = await this.userModel.findOne({
       _id: sender,
@@ -117,9 +153,8 @@ export class UserService {
       'invitations.room': room,
     });
 
-
-    if(!roomRecord) {
-      throw new DocumentNotFoundError('Room', {room})
+    if (!roomRecord) {
+      throw new DocumentNotFoundError('Room', { room });
     }
 
     if (userRecord) {

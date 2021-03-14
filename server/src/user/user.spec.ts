@@ -134,10 +134,10 @@ describe('User', () => {
         recipient,
         room,
       });
-     await userService.sendInvitation(sender, {
+      await userService.sendInvitation(sender, {
         recipient,
         room,
-      })
+      });
 
       //console.log(res1, res2)
       done('err');
@@ -187,6 +187,31 @@ describe('User', () => {
     } catch (e) {
       done();
     }
+  });
+
+  it('should accept invitation', async function () {
+    const { sender, recipient, room } = await helpers.createSendInviteMock();
+    await userService.sendInvitation(sender, { recipient, room });
+    const { invitations } = await userModel.findOne({ _id: sender });
+    await userService.acceptInvitation(recipient, invitations[0]._id);
+
+    const [user1, user2] = await userModel.find();
+
+    expect(user1.invitations[0].status).toEqual('accepted');
+    expect(user2.invitations[0].status).toEqual('accepted');
+  });
+
+  it('should not accept invitation', async function (done) {
+    try {
+      const { sender, recipient, room } = await helpers.createSendInviteMock();
+      await userService.sendInvitation(sender, { recipient, room });
+      const { invitations } = await userModel.findOne({ _id: sender });
+      await userService.acceptInvitation(sender, invitations[0]._id);
+      done('err')
+    } catch (e) {
+      done()
+    }
+
   });
 });
 

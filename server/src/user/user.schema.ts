@@ -22,6 +22,10 @@ class Invitation {
   createdAt?: string;
 }
 
+class InvitationWithID extends Invitation {
+  _id: Types.ObjectId
+}
+
 const InvitationScheme = SchemaFactory.createForClass(Invitation);
 
 export type UserDocument = User & Document;
@@ -53,7 +57,7 @@ export class User {
   rooms: Types.ObjectId[];
 
   @Prop({ type: [InvitationScheme] })
-  invitations?: Invitation[];
+  invitations?: InvitationWithID[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

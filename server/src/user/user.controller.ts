@@ -43,4 +43,9 @@ export class UserController {
   sendInvitation(@Body() data: SendInvitationDTO, @CurrentUser() user) {
     return this.userService.sendInvitation(user._id, data);
   }
+
+  @Post('/invitation/:id/accept')
+  acceptInvitation(@Param() { id }, @CurrentUser() user) {
+    return this.userService.acceptInvitation(user._id, id);
+  }
 }
