@@ -181,4 +181,14 @@ export class UserService {
       throw new IllegalOperationError('Requested user is already in the group');
     }
   }
+
+  async rejectInvitation(invitationId: ID) {
+    return this.userModel.updateMany(
+      {},
+      {
+        $pull: { 'invitations': { _id: invitationId }},
+      },
+        {multi: true}
+    );
+  }
 }

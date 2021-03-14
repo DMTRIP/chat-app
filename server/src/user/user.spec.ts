@@ -207,11 +207,21 @@ describe('User', () => {
       await userService.sendInvitation(sender, { recipient, room });
       const { invitations } = await userModel.findOne({ _id: sender });
       await userService.acceptInvitation(sender, invitations[0]._id);
-      done('err')
+      done('err');
     } catch (e) {
-      done()
+      done();
     }
+  });
 
+  it('should reject invitation', async function () {
+    const { sender, recipient, room } = await helpers.createSendInviteMock();
+    await userService.sendInvitation(sender, { recipient, room });
+    const { invitations } = await userModel.findOne({ _id: sender });
+    await userService.rejectInvitation(invitations[0]._id);
+
+    expect((await userModel.findOne({ _id: sender })).invitations).toHaveLength(
+      0,
+    );
   });
 });
 
