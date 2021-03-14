@@ -48,4 +48,9 @@ export class UserController {
   acceptInvitation(@Param() { id }, @CurrentUser() user) {
     return this.userService.acceptInvitation(user._id, id);
   }
+
+  @Post('/invitation/:id/reject')
+  rejectInvitation(@Param() { id }) {
+    return this.userService.rejectInvitation(id);
+  }
 }
