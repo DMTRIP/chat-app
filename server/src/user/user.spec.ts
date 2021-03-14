@@ -219,9 +219,10 @@ describe('User', () => {
     const { invitations } = await userModel.findOne({ _id: sender });
     await userService.rejectInvitation(invitations[0]._id);
 
-    expect((await userModel.findOne({ _id: sender })).invitations).toHaveLength(
-      0,
-    );
+    const [user1, user2] = await userModel.find();
+
+    expect(user1.invitations).toHaveLength(0);
+    expect(user2.invitations).toHaveLength(0);
   });
 });
 

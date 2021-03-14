@@ -183,12 +183,28 @@ export class UserService {
   }
 
   async rejectInvitation(invitationId: ID) {
+    const user = await this.userModel.findOne({
+      'invitations._id': invitationId,
+    });
+
+    if (!user) {
+      throw new DocumentNotFoundError('Invitation', { invitationId });
+    }
+
+    const { sender, recipient, room } = user.invitations[0];
+
     return this.userModel.updateMany(
       {},
       {
-        $pull: { 'invitations': { _id: invitationId }},
+        $pull: {
+          invitations: {
+            sender,
+            recipient,
+            room,
+          },
+        },
       },
-        {multi: true}
+      { multi: true },
     );
   }
 }
