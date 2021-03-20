@@ -36,10 +36,10 @@ export class User {
   _id: ID;
 
   @Prop()
-  firstName: string;
+  firstName?: string;
 
   @Prop()
-  lastName: string;
+  lastName?: string;
 
   @Prop({ unique: true })
   nickname: string;

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { User, UserDocument } from '../user/user.schema';
-import {Model, Types} from 'mongoose';
+import { Model, Types } from 'mongoose';
 import * as argon2 from 'argon2';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
@@ -12,7 +12,6 @@ import { UserInputError } from '../common/error/errors';
 
 @Injectable()
 export class AuthService {
-
   constructor(
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     private jwtService: JwtService,
@@ -22,18 +21,18 @@ export class AuthService {
     const salt = randomBytes(32);
 
     const hashedPassword = await argon2.hash(input.password, {
-        salt,
-        type: argon2.argon2id,
-      });
+      salt,
+      type: argon2.argon2id,
+    });
 
-      const userRecord = await this.userModel.create({
-        ...input,
-        _id: Types.ObjectId(),
-        salt: salt.toString(),
-        password: hashedPassword,
-      });
+    const userRecord = await this.userModel.create({
+      ...input,
+      _id: Types.ObjectId(),
+      salt: salt.toString(),
+      password: hashedPassword,
+    });
 
-      return this.generateToken(userRecord._id);
+    return this.generateToken(userRecord._id);
   }
 
   public async login(input: LoginUserDto) {
@@ -41,7 +40,7 @@ export class AuthService {
     const userRecord = await this.userModel.findOne({ email });
 
     if (!userRecord) {
-      throw new UserInputError('Wrong email or password')
+      throw new UserInputError('Wrong email or password');
     }
 
     /**
