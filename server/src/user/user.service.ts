@@ -14,6 +14,7 @@ import {
 } from '../common/error/errors';
 import { Types } from 'mongoose';
 import { InvitationStatus } from './types';
+import { ChatGateway } from '../chat/chat.gateway';
 
 export interface DirectMessage {
   senderId: ID;
@@ -27,6 +28,7 @@ export class UserService {
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Room.name) private roomModel: Model<Room>,
     @InjectModel(Message.name) private messageModel: Model<Message>,
+    private chatGateway: ChatGateway,
   ) {}
 
   getOne(id: ID) {
@@ -130,6 +132,8 @@ export class UserService {
       { _id: room },
       { $push: { users: recipient } },
     );
+
+    await this.chatGateway.emitJoinRoom(room, recipient);
   }
 
   private async validateSendInvitationInput(

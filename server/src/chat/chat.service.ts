@@ -9,7 +9,11 @@ import { Message } from './schemas/message.schema';
 import { CreateMessageDTO } from './dto/create-message-dto';
 import { GetMessagePageParams } from './get-message-page.params';
 import { RoomType } from './types';
-import {DocumentNotFoundError, IllegalOperationError} from "../common/error/errors";
+import {
+  DocumentNotFoundError,
+  IllegalOperationError,
+} from '../common/error/errors';
+import { ChatGateway } from './chat.gateway';
 
 @Injectable()
 export class ChatService {
@@ -17,6 +21,7 @@ export class ChatService {
     @InjectModel(Room.name) private roomModel: Model<RoomDocument>,
     @InjectModel(User.name) private userModel: Model<UserDocument>,
     @InjectModel(Message.name) private messageModel: Model<Message>,
+    private chatGateway: ChatGateway,
   ) {}
 
   async createRoom(createRoomDto: CreateRoomDto): Promise<Room> {
@@ -34,6 +39,8 @@ export class ChatService {
       { $push: { rooms: room._id } },
     );
 
+    await this.chatGateway.emitNewRoom(room);
+
     return room;
   }
 
@@ -41,22 +48,26 @@ export class ChatService {
     messageDTO: CreateMessageDTO,
     userId: ID,
   ): Promise<Message> {
-    return this.messageModel.create({
+    const message = await this.messageModel.create({
       ...messageDTO,
       room: messageDTO.roomId,
       sender: userId,
     });
+
+    await this.chatGateway.emitNewMessage(message);
+
+    return message;
   }
 
   async addUserToPublicRoom(userId: ID, roomId: ID): Promise<void> {
     const room = await this.roomModel.findOne({ _id: roomId });
 
     if (!room) {
-      throw new DocumentNotFoundError('Room', { roomId })
+      throw new DocumentNotFoundError('Room', { roomId });
     }
 
     if (room.type !== RoomType.group) {
-      throw new IllegalOperationError('users can not join to direct rooms')
+      throw new IllegalOperationError('users can not join to direct rooms');
     }
 
     // @ts-ignore
@@ -90,7 +101,7 @@ export class ChatService {
     );
 
     if (!room) {
-      throw new DocumentNotFoundError('Room', { roomId })
+      throw new DocumentNotFoundError('Room', { roomId });
     }
 
     await this.userModel.findOneAndUpdate(
@@ -103,5 +114,7 @@ export class ChatService {
     if (room.users.length === 0) {
       await this.roomModel.deleteOne({ _id: roomId });
     }
+
+    await this.chatGateway.emitLeaveRoom(roomId, userId);
   }
 }

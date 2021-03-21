@@ -5,6 +5,7 @@ import { UserService } from './user.service';
 import { UserController } from './user.controller';
 import { Room, RoomSchema } from '../chat/schemas/room.schema';
 import { Message, MessageSchema } from '../chat/schemas/message.schema';
+import { ChatGateway } from '../chat/chat.gateway';
 
 const models = MongooseModule.forFeature([
   { name: User.name, schema: UserSchema },
@@ -15,7 +16,7 @@ const models = MongooseModule.forFeature([
 @Module({
   imports: [models],
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, ChatGateway],
   exports: [models, UserService],
 })
 export class UserModule {}

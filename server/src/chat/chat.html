@@ -17,10 +17,17 @@
            <div class="messages"></div>
            <input type="text" class="input">
        </div>
+       <div id="log"></div>
    </div>
 
     <script>
 		const socket = io('http://localhost:3002')
+
+        function log(str) {
+		    const p = document.createElement('p')
+            p.innerText = str
+		    document.querySelector('#log').appendChild(p)
+        }
 
         socket.on('connect', () => {
         	console.log(`Connect: ${socket.id}`)
@@ -43,7 +50,8 @@
             document.querySelector('.users').appendChild(userHtml)
         })
 
-        socket.on('roomCreated', (room) => {
+        socket.on('newRoom', (room) => {
+            log('newRoom')
           console.log('roomCreated ', room)
         })
 
