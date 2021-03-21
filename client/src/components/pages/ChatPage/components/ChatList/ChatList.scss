@@ -1,0 +1,151 @@
+.chat-list {
+  padding-top: 20px;
+  max-width: 360px;
+  height: 100vh;
+  /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#242a31+0,2d343c+100 */
+  background: #242a31; /* Old browsers */
+  background: -moz-linear-gradient(
+    top,
+    #242a31 0%,
+    #2d343c 100%
+  ); /* FF3.6-15 */
+  background: -webkit-linear-gradient(
+    top,
+    #242a31 0%,
+    #2d343c 100%
+  ); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(
+    to bottom,
+    #242a31 0%,
+    #2d343c 100%
+  ); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#242a31', endColorstr='#2d343c',GradientType=0 ); /* IE6-9 */
+
+  &__search {
+    max-width: 310px;
+    height: 40px;
+    border-radius: 20px;
+    background-color: #363d45;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    padding-left: 20px;
+    margin-bottom: 20px;
+  }
+
+  &__search-icon {
+    padding-right: 15px;
+  }
+
+  &__input {
+    background-color: #363d45;
+    border: none;
+    width: 100%;
+    height: auto;
+    border-radius: 20px;
+    color: #e8e9eb;
+
+    &::placeholder {
+      color: #5b6166;
+    }
+  }
+
+  &__divider,
+  &__underline {
+    border-bottom: 1px #3f444b solid;
+    width: 100%;
+  }
+
+  &__divider {
+    margin-bottom: 25px;
+  }
+
+  &__chat {
+    display: flex;
+    margin-right: 20px;
+    position: relative;
+    align-items: center;
+
+    &--active {
+      border-left: 3px solid #2b80ff;
+    }
+
+    &:hover {
+      cursor: pointer;
+    }
+
+    &:not(&:last-child) {
+      .chat-list__underline:last-child {
+        display: none;
+      }
+    }
+  }
+
+  &__avatar {
+    padding-left: 15px;
+    display: flex;
+    flex-direction: column;
+    margin-right: 18px;
+  }
+
+  &__cropper {
+    width: 50px;
+    height: 50px;
+    overflow: hidden;
+    border-radius: 50%;
+    margin: 25px 0;
+  }
+
+  &__status {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #2dc100;
+    position: absolute;
+    left: 5px;
+    top: 20px;
+  }
+
+  &__name {
+    color: #ffffff;
+    font-size: 16px;
+    margin-bottom: 5px;
+  }
+
+  &__message {
+    color: #abadaf;
+    font-family: 'Roboto Light', sans-serif;
+    font-weight: 300;
+    font-size: 14px;
+  }
+
+  &__time {
+    font-size: 11px;
+    color: #64676b;
+    width: max-content;
+
+    &--active {
+      color: #fff;
+    }
+  }
+
+  &__actions {
+    color: #fff;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    padding-top: 10px;
+  }
+
+  &__footer {
+    margin-left: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    padding-top: 10px;
+  }
+}
